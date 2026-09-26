@@ -1,0 +1,270 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>NYC Room Type Predictor · AI-Powered Airbnb Classifier</title>
+  <meta name="description" content="Predict the room type of any NYC Airbnb listing using machine learning. Enter listing details and get an instant AI prediction." />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+
+  <!-- Animated background -->
+  <div class="bg-layer" aria-hidden="true">
+    <div class="bg-grid"></div>
+    <div class="bg-glow glow-1"></div>
+    <div class="bg-glow glow-2"></div>
+    <div class="bg-glow glow-3"></div>
+    <canvas id="particleCanvas"></canvas>
+  </div>
+
+  <!-- Skyline silhouette -->
+  <div class="skyline" aria-hidden="true"></div>
+
+  <!-- HEADER -->
+  <header class="header">
+    <div class="header-inner">
+      <div class="brand">
+        <span class="brand-icon">🗽</span>
+        <div>
+          <span class="brand-title">NYC Predictor</span>
+          <span class="brand-sub">Airbnb Room Classifier</span>
+        </div>
+      </div>
+      <div class="header-badge">
+        <span class="pulse-dot"></span>
+        <span>Model Online</span>
+      </div>
+    </div>
+  </header>
+
+  <!-- HERO -->
+  <section class="hero">
+    <div class="hero-eyebrow">
+      <span class="tag-icon">🤖</span> ML-Powered Prediction
+    </div>
+    <h1 class="hero-title">
+      Predict Your NYC<br/>
+      <span class="gradient-text">Airbnb Room Type</span>
+    </h1>
+    <p class="hero-sub">
+      Fill in your listing details below — our trained machine learning model will
+      instantly classify the room type and show you confidence scores.
+    </p>
+    <div class="hero-stats">
+      <div class="stat"><span class="stat-num">4</span><span class="stat-label">Room Types</span></div>
+      <div class="stat-div"></div>
+      <div class="stat"><span class="stat-num">10</span><span class="stat-label">Features</span></div>
+      <div class="stat-div"></div>
+      <div class="stat"><span class="stat-num">NYC</span><span class="stat-label">5 Boroughs</span></div>
+    </div>
+  </section>
+
+  <!-- MAIN LAYOUT -->
+  <main class="main-grid">
+
+    <!-- LEFT: Form -->
+    <section class="form-panel glass-card" aria-label="Listing Details Form">
+      <div class="panel-header">
+        <h2><span class="ph-icon">📋</span> Listing Details</h2>
+        <span class="panel-count" id="fieldCount">0 / 10</span>
+      </div>
+
+      <form id="predictForm" novalidate>
+
+        <!-- Location Group -->
+        <div class="field-group">
+          <div class="group-label"><span>📍</span> Location</div>
+          <div class="field-row">
+            <div class="field">
+              <label for="neighbourhood_group">Borough</label>
+              <div class="select-wrap">
+                <select id="neighbourhood_group" name="neighbourhood_group" required>
+                  <option value="">Select borough…</option>
+                  <option value="Manhattan">Manhattan</option>
+                  <option value="Brooklyn">Brooklyn</option>
+                  <option value="Queens">Queens</option>
+                  <option value="Bronx">Bronx</option>
+                  <option value="Staten Island">Staten Island</option>
+                </select>
+                <span class="select-arrow">▾</span>
+              </div>
+            </div>
+            <div class="field">
+              <label for="neighbourhood">Neighbourhood</label>
+              <div class="select-wrap">
+                <select id="neighbourhood" name="neighbourhood" required>
+                  <option value="">Select neighbourhood…</option>
+                </select>
+                <span class="select-arrow">▾</span>
+              </div>
+            </div>
+          </div>
+          <div class="field-row">
+            <div class="field">
+              <label for="latitude">Latitude</label>
+              <div class="input-wrap">
+                <span class="input-icon">↕</span>
+                <input type="number" id="latitude" name="latitude" step="0.0001"
+                  min="-90" max="90" placeholder="40.7128" required />
+              </div>
+            </div>
+            <div class="field">
+              <label for="longitude">Longitude</label>
+              <div class="input-wrap">
+                <span class="input-icon">↔</span>
+                <input type="number" id="longitude" name="longitude" step="0.0001"
+                  min="-180" max="180" placeholder="-74.0060" required />
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Pricing Group -->
+        <div class="field-group">
+          <div class="group-label"><span>💵</span> Pricing &amp; Availability</div>
+          <div class="field-row">
+            <div class="field">
+              <label for="price">Price / Night ($)</label>
+              <div class="input-wrap">
+                <span class="input-icon">$</span>
+                <input type="number" id="price" name="price" step="1"
+                  min="1" placeholder="120" required />
+              </div>
+            </div>
+            <div class="field">
+              <label for="minimum_nights">Min. Nights</label>
+              <div class="input-wrap">
+                <span class="input-icon">🌙</span>
+                <input type="number" id="minimum_nights" name="minimum_nights" step="1"
+                  min="1" max="365" placeholder="2" required />
+              </div>
+            </div>
+          </div>
+          <div class="field">
+            <label for="availability_365">
+              Availability (days / year)
+              <span class="range-val" id="availVal">180</span>
+            </label>
+            <input type="range" id="availability_365" name="availability_365"
+              min="0" max="365" value="180" class="slider" />
+            <div class="range-ends"><span>0 days</span><span>365 days</span></div>
+          </div>
+        </div>
+
+        <!-- Reviews Group -->
+        <div class="field-group">
+          <div class="group-label"><span>⭐</span> Reviews</div>
+          <div class="field-row">
+            <div class="field">
+              <label for="number_of_reviews">Total Reviews</label>
+              <div class="input-wrap">
+                <span class="input-icon">💬</span>
+                <input type="number" id="number_of_reviews" name="number_of_reviews"
+                  step="1" min="0" placeholder="45" required />
+              </div>
+            </div>
+            <div class="field">
+              <label for="reviews_per_month">Reviews / Month</label>
+              <div class="input-wrap">
+                <span class="input-icon">📅</span>
+                <input type="number" id="reviews_per_month" name="reviews_per_month"
+                  step="0.01" min="0" placeholder="1.5" required />
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Host Group -->
+        <div class="field-group">
+          <div class="group-label"><span>🏠</span> Host Info</div>
+          <div class="field">
+            <label for="calculated_host_listings_count">Host Total Listings</label>
+            <div class="input-wrap">
+              <span class="input-icon">🔑</span>
+              <input type="number" id="calculated_host_listings_count"
+                name="calculated_host_listings_count" step="1" min="0" placeholder="3" required />
+            </div>
+          </div>
+        </div>
+
+        <!-- Submit -->
+        <button type="submit" class="predict-btn" id="predictBtn">
+          <span class="btn-content">
+            <span class="btn-icon">⚡</span>
+            <span class="btn-text">Predict Room Type</span>
+          </span>
+          <span class="btn-loader" aria-hidden="true"></span>
+        </button>
+
+      </form>
+    </section>
+
+    <!-- RIGHT: Result -->
+    <section class="result-panel" aria-label="Prediction Result" aria-live="polite">
+
+      <!-- Idle state -->
+      <div class="result-idle glass-card" id="resultIdle">
+        <div class="idle-art">
+          <div class="idle-rings">
+            <div class="ring r1"></div>
+            <div class="ring r2"></div>
+            <div class="ring r3"></div>
+          </div>
+          <div class="idle-icon">🤖</div>
+        </div>
+        <h3>Awaiting Prediction</h3>
+        <p>Fill in the listing details on the left and hit <strong>Predict Room Type</strong> to see the AI result here.</p>
+        <div class="idle-hints">
+          <span class="hint-tag">🏠 Entire Home</span>
+          <span class="hint-tag">🚪 Private Room</span>
+          <span class="hint-tag">🛏 Shared Room</span>
+        </div>
+      </div>
+
+      <!-- Result state -->
+      <div class="result-card glass-card" id="resultCard" hidden>
+        <div class="result-top">
+          <div class="result-room-icon" id="resultIcon">🏠</div>
+          <div class="result-info">
+            <div class="result-label">Predicted Room Type</div>
+            <div class="result-type" id="resultType">—</div>
+          </div>
+          <div class="result-conf-badge" id="confBadge">—%</div>
+        </div>
+        <div class="result-divider"></div>
+        <div class="prob-section">
+          <div class="prob-title">Confidence Breakdown</div>
+          <div class="prob-bars" id="probBars"></div>
+        </div>
+        <div class="result-divider"></div>
+        <div class="echo-section">
+          <div class="echo-title">Input Summary</div>
+          <div class="echo-grid" id="echoGrid"></div>
+        </div>
+        <button class="retry-btn" id="retryBtn">↺ Try another listing</button>
+      </div>
+
+      <!-- Error state -->
+      <div class="error-card glass-card" id="errorCard" hidden>
+        <div class="error-icon">⚠️</div>
+        <h3>Prediction Failed</h3>
+        <p id="errorMsg">Could not connect to the API. Make sure uvicorn is running on port 8000.</p>
+        <button class="retry-btn" id="errorRetryBtn">↺ Try again</button>
+      </div>
+
+    </section>
+  </main>
+
+  <footer class="footer">
+    <span>Built with FastAPI · scikit-learn · Pydantic</span>
+    <span class="footer-sep">·</span>
+    <span>NYC Airbnb Room Type Classifier</span>
+  </footer>
+
+  <script src="app.js"></script>
+</body>
+</html>
